@@ -40,7 +40,7 @@ export async function main(ns) {
         else
             ns.tprint(`WARNING: "${fullLocalFilePath}" was not updated. (Currently running, or not located at ${remoteFilePath}?)`)
     }
-    ns.tprint(`INFO: Edited by SK_Artemis ` +
+    ns.tprint(`Edit by SK_Artemis ` +
               `INFO: Pull complete. If you have any questions or issues, head over to the Bitburner #alains-scripts Discord channel: ` +
         `https://discord.com/channels/415207508303544321/935667531111342200`);
     // Remove any temp files / scripts from the prior version
