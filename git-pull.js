@@ -41,9 +41,11 @@ export async function main(ns) {
             ns.tprint(`WARNING: "${fullLocalFilePath}" was not updated. (Currently running, or not located at ${remoteFilePath}?)`)
     }
     ns.tprint(`[Edit by SK_Artemis] ` +
+              
               `INFO: Pull complete. If you have any questions or issues, head over to the Bitburner #alains-scripts Discord channel: ` +
               `https://discord.com/channels/415207508303544321/935667531111342200` +
-              `To start, type: run autopilot.js`);
+              
+              `To start, type: "run autopilot.js" `);
     // Remove any temp files / scripts from the prior version
     ns.run(pathJoin(options.subfolder, `cleanup.js`));
 }
