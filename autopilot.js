@@ -110,7 +110,7 @@ async function startUp(ns) {
         installedAugmentations = !(4 in unlockedSFs) ? [] :
             await getNsDataThroughFile(ns, 'ns.singularity.getOwnedAugmentations()', '/Temp/player-augs-installed.txt');
         if (!(4 in unlockedSFs))
-            log(ns, `WARNING: This script requires SF4 (singularity) functions to assess purchasable augmentations ascend automatically. ` +
+            log(ns, `WARNING: This script requires SF4 (singularity) functions to assess purchasable augmentations and ascend automatically. ` +
                 `Some functionality will be disabled and you'll have to manage working for factions, purchasing, and installing augmentations yourself.`, true);
     } catch (err) {
         if (unlockedSFs[4] || 0 == 3) throw err; // No idea why this failed, treat as temporary and allow auto-retry.		
