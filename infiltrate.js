@@ -478,7 +478,7 @@ export async function main(ns) {
     }
 
     print(
-        "Automated infiltration is enabled...\nVWhen you visit the infiltration screen of any company, all tasks are completed automatically."
+        "Automated infiltration is enabled...\nWhen you visit the infiltration screen of any company, all tasks are completed automatically."
     );
 
     endInfiltration();
