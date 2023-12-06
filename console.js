@@ -1,3 +1,4 @@
+/** @param {NS} ns */
 export async function beeper(ns, value) {
     while (true) {
         ns.tprint("beep "+value);
