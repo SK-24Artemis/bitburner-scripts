@@ -1,4 +1,5 @@
-export async function main(ns) { // literally spam
+// run 1000 scripts at once Achievement
+export async function main(ns) {
     let script = "export async function main(ns) { while(true){ await ns.sleep(100000); } }";
     let pids = [];
     for (let i = 0; i < 1000; i++) {
