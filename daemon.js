@@ -756,7 +756,8 @@ async function doTargetingLoop(ns) {
                 !options['no-share'] && (options['share'] || network.totalMaxRam > 1024)) // If not explicitly enabled or disabled, auto-enable share at 1TB of network RAM
             {
                 // Figure out if the player is currently working (no point in RAM share if we aren't currently working for a faction)
-                let workInfo = await getCurrentWorkInfo(ns);
+                // Getting work info requires sinularity (SF4) - if we don't have it yet, we can still share, but we can only assume we're currently doing faction work.
+                let workInfo = 4 in dictSourceFiles ? await getCurrentWorkInfo(ns) : { "type": "FACTION" };
                 if (workInfo.type == "FACTION") {
                     let shareTool = getTool("share");
                     let maxThreads = shareTool.getMaxThreads(); // This many threads would use up 100% of the (1-utilizationPercent)% RAM remaining
@@ -987,22 +988,22 @@ class Server {
         return Math.floor((this.percentageToSteal / this.percentageStolenPerHackThread()).toPrecision(14));
     }
     getGrowThreadsNeeded() {
-        return Math.min(this.getMaxMoney(),
+        return Math.max(0, Math.ceil(Math.min(this.getMaxMoney(),
             // TODO: Not true! Worst case is 1$ per thread and *then* it multiplies. We can return a much lower number here.
-            Math.ceil((this.cyclesNeededForGrowthCoefficient() / this.serverGrowthPercentage()).toPrecision(14)));
+            this.cyclesNeededForGrowthCoefficient() / this.serverGrowthPercentage()).toPrecision(14)));
     }
     getWeakenThreadsNeeded() {
-        return Math.ceil(((this.getSecurity() - this.getMinSecurity()) / actualWeakenPotency()).toPrecision(14));
+        return Math.max(0, Math.ceil(((this.getSecurity() - this.getMinSecurity()) / actualWeakenPotency()).toPrecision(14)));
     }
     getGrowThreadsNeededAfterTheft() {
-        return Math.min(this.getMaxMoney(),
-            Math.ceil((this.cyclesNeededForGrowthCoefficientAfterTheft() / this.serverGrowthPercentage() * recoveryThreadPadding).toPrecision(14)));
+        return Math.max(0, Math.ceil(Math.min(this.getMaxMoney(),
+            this.cyclesNeededForGrowthCoefficientAfterTheft() / this.serverGrowthPercentage() * recoveryThreadPadding).toPrecision(14)));
     }
     getWeakenThreadsNeededAfterTheft() {
-        return Math.ceil((this.getHackThreadsNeeded() * hackThreadHardening / actualWeakenPotency() * recoveryThreadPadding).toPrecision(14));
+        return Math.max(0, Math.ceil((this.getHackThreadsNeeded() * hackThreadHardening / actualWeakenPotency() * recoveryThreadPadding).toPrecision(14)));
     }
     getWeakenThreadsNeededAfterGrowth() {
-        return Math.ceil((this.getGrowThreadsNeededAfterTheft() * growthThreadHardening / actualWeakenPotency() * recoveryThreadPadding).toPrecision(14));
+        return Math.max(0, Math.ceil((this.getGrowThreadsNeededAfterTheft() * growthThreadHardening / actualWeakenPotency() * recoveryThreadPadding).toPrecision(14)));
     }
     hasRoot() { return this._hasRootCached ??= this.ns.hasRootAccess(this.name); }
     isHost() { return this.name == daemonHost; }
@@ -1180,7 +1181,7 @@ async function performScheduling(ns, currentTarget, snapshot) {
         const newBatchStart = new Date((cyclesScheduled === 0) ? Date.now() + queueDelay : lastBatch.getTime() + cycleTimingDelay);
         lastBatch = new Date(newBatchStart.getTime());
         const batchTiming = getScheduleTiming(newBatchStart, currentTarget);
-        if (verbose && runOnce) logSchedule(batchTiming, currentTarget); // Special log for troubleshooting batches
+        if (verbose && runOnce) logSchedule(ns, batchTiming, currentTarget); // Special log for troubleshooting batches
         const newBatch = getScheduleObject(batchTiming, currentTarget, scheduledTasks.length);
         if (firstEnding === null) { // Can't start anything after this first hack completes (until back at min security), or we risk throwing off timing
             firstEnding = new Date(newBatch.hackEnd.valueOf());
@@ -1219,7 +1220,7 @@ async function performScheduling(ns, currentTarget, snapshot) {
 }
 
 /** Produces a special log for troubleshooting cycle schedules */
-let logSchedule = (schedule, currentTarget) =>
+let logSchedule = (ns, schedule, currentTarget) =>
     log(ns, `Current Time: ${formatDateTime(new Date())} Established a schedule for ${getTargetSummary(currentTarget)} from requested startTime ${formatDateTime(schedule.batchStart)}:` +
         `\n  Hack - End: ${formatDateTime(schedule.hackEnd)}  Start: ${formatDateTime(schedule.hackStart)}  Time: ${formatDuration(currentTarget.timeToHack())}` +
         `\n  Weak1- End: ${formatDateTime(schedule.firstWeakenEnd)}  Start: ${formatDateTime(schedule.firstWeakenStart)}  Time: ${formatDuration(currentTarget.timeToWeaken())}` +
@@ -1455,7 +1456,7 @@ async function prepServer(ns, currentTarget) {
     let weakenThreadsAllowable = weakenTool.getMaxThreads(); // Note: Max is based on total ram across all servers (since thread spreading is allowed)
     let weakenThreadsNeeded = currentTarget.getWeakenThreadsNeeded();
     // Plan grow if needed, but don't bother if we didn't have enough ram to schedule all weaken threads to reach min security
-    let growThreadsNeeded, growThreadsScheduled;
+    let growThreadsNeeded, growThreadsScheduled = 0;
     if (weakenThreadsNeeded < weakenThreadsAllowable && (growThreadsNeeded = currentTarget.getGrowThreadsNeeded())) {
         let growThreadsAllowable = growTool.getMaxThreads(true) - weakenThreadsNeeded; // Take into account RAM that will be consumed by weaken threads scheduled
         growThreadsScheduled = Math.min(growThreadsAllowable, growThreadsNeeded);
