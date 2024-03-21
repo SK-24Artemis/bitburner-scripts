@@ -77,7 +77,11 @@ const infiltrationGames = [
         init: function (screen) { },
         play: function (screen) {
             const h4 = getEl(screen, "h4");
-            const code = h4[1].textContent;
+            const spanElements = h4[1].querySelectorAll("span");
+            const code = Array.from(spanElements)
+            .filter(span => span.textContent !== "?")
+            .map(span => span.textContent)
+            .pop()
 
             switch (code) {
                 case "↑":
