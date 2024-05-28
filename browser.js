@@ -1,4 +1,5 @@
 /** @param {NS} ns */
+//I forgot where the other files are...
 export async function main(ns) {
 	ns.write("wiki.js", `import { marked } from "marked/marked.js";
 import { hljs } from "highlight.min.js";
