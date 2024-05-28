@@ -1,5 +1,5 @@
 /** @param {NS} ns */
-// WARNING !!! executing this script two times will crash the game
+// WARNING THIS SCRIPT CAN CRAASH THE GAME!!!
 export async function main(ns) {
     let win = eval("window");
     win.st = win.setTimeout;
